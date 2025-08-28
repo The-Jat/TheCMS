@@ -1,3 +1,3 @@
 # TheCMS
 
-## A Powerful yet intuitive CMS for journeling.
+A Powerful yet intuitive CMS for journeling.
