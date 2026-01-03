@@ -1,0 +1,21 @@
+
+
+// //sidebar styles
+[direction="rtl"] {
+
+    .deznav{
+		.metismenu{
+			.has-arrow::after{
+				-webkit-transform: rotate(-45deg) translateY(-50%);
+  				transform: rotate(-45deg) translateY(-50%);
+			}
+			.mm-active{
+				& > .has-arrow::after{
+					-webkit-transform: rotate(-135deg) translateY(-50%);
+  					transform: rotate(-135deg) translateY(-50%);
+				}
+			}
+		} 
+	} 
+}
+

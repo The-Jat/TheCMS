@@ -1,0 +1,19 @@
+{
+    "name": "admin/zenix",
+    "description": "",
+    "type": "laravel-theme",
+    "version": "1.0",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Rahul Dev Xarma",
+            "email": "rahulxarma@gmail.com"
+        }
+    ],
+    "extra": {
+        "theme": {
+            "parent": "",
+            "active": true
+        }
+    }
+}

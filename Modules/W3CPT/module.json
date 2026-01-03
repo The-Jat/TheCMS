@@ -1,0 +1,13 @@
+{
+    "name": "W3CPT",
+    "alias": "w3cpt",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\W3CPT\\Providers\\W3CPTServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

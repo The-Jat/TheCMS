@@ -1,0 +1,95 @@
+
+[direction="rtl"] {
+    .market-line,
+    .timeline-chart,
+    .bar-chart{
+        direction: ltr;
+    }
+    .chatbox .msg_cotainer{
+        border-radius: 0.35rem 0 0.35rem 0.35rem;
+    }
+    .form-check {
+        padding-left: 0;
+    }
+    .form-check .form-check-input{
+        margin-right: -1.5em;
+        margin-left: 0;
+    }
+    .bootstrap-select .dropdown-toggle .filter-option{
+        text-align: right !important;
+    }
+    .apexcharts-legend-marker{
+        margin-right: 0;
+        margin-left: 3px;
+    }
+    .breadcrumb-item + .breadcrumb-item::before{
+        float: right;
+        padding-right: 0;
+        padding-left: var(--bs-breadcrumb-item-padding-x);
+    }
+    .breadcrumb-item + .breadcrumb-item {
+        padding-left: 0;
+        padding-right: var(--bs-breadcrumb-item-padding-x);
+    }
+    .modal-header .btn-close{
+        margin: auto calc(-.5 * var(--bs-modal-header-padding-y)) calc(-.5 * var(--bs-modal-header-padding-x)) calc(-.5 * var(--bs-modal-header-padding-y));
+    }
+    .lg-outer.lg-visible {
+        direction: ltr;
+    }
+    .alert-dismissible .btn-close{
+        right: auto;
+        left: 0;
+    }
+    .alert{
+        padding-left: 40px;
+    }
+    .noUi-horizontal .noUi-handle{
+        left: auto;
+        right: -10px;
+    }
+    .noUi-vertical .noUi-handle{
+        left: -4px;
+    }
+    .noUi-pips-vertical{
+        left: auto;
+        right: 100%;
+    }
+    .noUi-value-vertical{
+        padding-left: 0;
+        padding-right: 25px;
+        right: 0;
+    }
+    .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback){
+        margin-left: 0px;
+        margin-right: -1px;
+        border-top-left-radius: $radius;
+        border-bottom-left-radius: $radius;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating), .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n + 3), .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control, .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select{
+        border-top-right-radius: $radius;
+        border-bottom-right-radius: $radius;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    .dz-demo-panel .ps__rail-y{
+        right: auto!important;
+        left: 0;
+    }
+    .btn-group > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .btn.dropdown-toggle-split:first-child, .btn-group > .btn-group:not(:last-child) > .btn{
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    .btn-group > .btn:first-child{
+        border-top-right-radius: $radius;
+        border-bottom-right-radius: $radius;
+    }
+    .btn-group > .btn:nth-child(n+3), .btn-group > :not(.btn-check) + .btn, .btn-group > .btn-group:not(:first-child) > .btn{
+        border-top-left-radius: $radius;
+        border-bottom-left-radius: $radius;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+}

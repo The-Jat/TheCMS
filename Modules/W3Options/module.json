@@ -1,0 +1,11 @@
+{
+    "name": "W3Options",
+    "alias": "w3options",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\W3Options\\Providers\\W3OptionsServiceProvider"
+    ],
+    "files": []
+}

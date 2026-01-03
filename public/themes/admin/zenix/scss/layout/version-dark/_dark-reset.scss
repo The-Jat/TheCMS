@@ -1,0 +1,64 @@
+
+
+
+
+[data-theme-version="dark"] {
+    --card : #{$dark-card};
+    --text-dark : #{$d-text-dark};
+    --text-gray : #{$d-text-gray};
+    --text : #{$d-text};
+    --body-bg : #{$d-bg};
+    --light : #{$d-bg};
+    --border : #{$d-border};
+    --bs-body-color :#{$d-text};
+    --bs-heading-color : #{$d-text-dark};
+    --bs-emphasis-color : #{$d-text-dark}; 
+    
+    background: $d-bg;
+    color: $d-ctl;
+	
+	--nav-headbg : #{$dark-card};
+	--sidebar-bg : #{$dark-card};
+	--headerbg: #{$dark-card};
+
+    --bs-border-color : #{$d-border};
+	
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: $white !important;
+    }
+    a.link {
+        color: $d-ctd;
+    }
+    a.link:focus,
+    a.link:hover {
+        color: $info;
+    }
+
+    a {
+        &:hover {
+            color: $white;
+        }
+    }
+	
+	.text-secondary{
+		color:#fff;
+	}
+	
+    //Generating border classess
+    @each $value in $borders {
+        @if $value == "" {
+            .border {
+                border: 1px solid $d-border !important;
+            }
+        } @else {
+            .border-#{$value} {
+                border-#{$value}: 1px solid $d-border !important;
+            }
+        }
+    }
+}

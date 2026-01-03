@@ -1,0 +1,31 @@
+{
+    "name": "nwidart/w3options",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\W3Options\\": "",
+            "Modules\\W3Options\\App\\": "app/",
+            "Modules\\W3Options\\Database\\Factories\\": "database/factories/",
+            "Modules\\W3Options\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\W3Options\\Tests\\": "tests/"
+        }
+    }
+}

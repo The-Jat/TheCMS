@@ -1,0 +1,19 @@
+{
+    "name": "frontend/lemars",
+    "description": "LeMars : Blog HTML Template",
+    "type": "laravel-theme",
+    "version": "1.0",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "W3cms",
+            "email": "w3cms@gmail.com"
+        }
+    ],
+    "extra": {
+        "theme": {
+            "parent": "",
+            "active": true
+        }
+    }
+}
