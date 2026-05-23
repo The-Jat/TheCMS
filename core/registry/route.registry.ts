@@ -1,5 +1,6 @@
 import { RouteDefinition } from '@thejatcms/sdk';
 import { compileRoute } from '../router/route-matcher';
+import { scoreRoute } from '../router/route-score';
 
 export class RouteRegistry {
 
@@ -15,9 +16,13 @@ export class RouteRegistry {
             pluginName,
 
             matcher: compileRoute(r.path),
+
+            score: scoreRoute(r.path),
         }));
 
         this.routes.push(...enriched);
+
+        this.routes.sort((a, b) => b.score - a.score);
 
         const existing = this.pluginRoutes.get(pluginName) || [];
 
