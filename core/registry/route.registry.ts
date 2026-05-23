@@ -1,5 +1,5 @@
-import { RouteDefinition } from "../../packages/sdk/src/plugins";
-
+// import { RouteDefinition } from "../../packages/sdk/src/plugins";
+import { RouteDefinition } from '@thejatcms/sdk';
 export class RouteRegistry {
   private routes: RouteDefinition[] = [];
 

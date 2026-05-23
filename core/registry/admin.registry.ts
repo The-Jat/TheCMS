@@ -1,4 +1,4 @@
-import { AdminNavigationItem } from "../../packages/sdk/src/plugins";
+import { AdminNavigationItem } from '@thejatcms/sdk';
 
 export class AdminRegistry {
   private navigation: AdminNavigationItem[] = [];

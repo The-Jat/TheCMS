@@ -1,4 +1,4 @@
-import { Permission } from "../../packages/sdk/src/plugins";
+import { Permission } from '@thejatcms/sdk';
 
 export class PermissionRegistry {
   private permissions: Permission[] = [];

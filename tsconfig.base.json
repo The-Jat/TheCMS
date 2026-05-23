@@ -11,9 +11,18 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["core/*"],
-      "@shared/*": ["packages/shared/src/*"],
-      "@sdk/*": ["packages/sdk/src/*"]
+      "@core/*": [
+        "core/*"
+      ],
+      "@shared/*": [
+        "packages/shared/src/*"
+      ],
+      "@thejatcms/sdk": [
+        "packages/sdk/src/index.ts"
+      ],
+      "@thejatcms/sdk/*": [
+        "packages/sdk/src/*"
+      ]
     }
   }
 }
