@@ -18,9 +18,12 @@ export type Permission = string;
 export interface PluginDefinition {
   name: string;
   version: string;
+  enabled: boolean;
+  entry: string;
 
   routes?: RouteDefinition[];
   permissions?: Permission[];
   hooks?: unknown[];
   adminNavigation?: AdminNavigationItem[];
+  dependencies?: string[];
 }

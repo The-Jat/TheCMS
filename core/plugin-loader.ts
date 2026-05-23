@@ -22,65 +22,93 @@ export class PluginLoader {
       return [];
     }
 
-    const plugins = fs.readdirSync(pluginsDir);
+    const dirs = fs.readdirSync(pluginsDir);
 
-    for (const pluginName of plugins) {
+    // PHASE 1: collect manifests
+    const manifests: Record<string, any> = {};
+
+    for (const pluginName of dirs) {
       const manifestPath = path.join(
         pluginsDir,
         pluginName,
         'plugin.json',
       );
 
-      if (!fs.existsSync(manifestPath)) {
-        console.log(`Skipping ${pluginName}: plugin.json missing`);
-        continue;
-      }
+      if (!fs.existsSync(manifestPath)) continue;
 
-      // 1. LOAD MANIFEST FIRST
       const manifest = JSON.parse(
         fs.readFileSync(manifestPath, 'utf-8'),
       );
 
-      // 2. BEFORE LOAD HOOK
+      manifests[manifest.name] = {
+        ...manifest,
+        pluginName,
+      };
+    }
+
+    // PHASE 2: sort by dependencies
+    const order = this.sortPlugins(manifests);
+
+    // PHASE 3: load plugins in order
+    for (const name of order) {
+      const manifest = manifests[name];
+
+      if (!manifest) continue;
+
       await this.hooks.emit('plugin.beforeLoad', manifest);
 
-      // 3. CHECK ENABLED BEFORE DOING ANYTHING
       if (!manifest.enabled) {
         console.log(`Skipping ${manifest.name}: disabled`);
         continue;
       }
 
-      // 4. RESOLVE ENTRY
       const entryPath = path.join(
         pluginsDir,
-        pluginName,
+        manifest.pluginName,
         manifest.entry,
       );
 
-      // 5. LOAD PLUGIN
       const pluginModule = await import(
         pathToFileURL(entryPath).href
       );
 
       const plugin = pluginModule.default;
 
-      // 6. LOADED HOOK
       await this.hooks.emit('plugin.loaded', plugin);
 
-      console.log('PLUGIN');
-      console.log(plugin);
-
-      // 7. REGISTER INTO KERNEL
       this.routeRegistry.register(plugin.routes ?? []);
       this.permissionRegistry.register(plugin.permissions ?? []);
       this.adminRegistry.register(plugin.adminNavigation ?? []);
 
-      // 8. AFTER LOAD HOOK
       await this.hooks.emit('plugin.afterLoad', plugin);
-
-      // 9. DEBUG OUTPUT
-      console.log('PLUGIN MANIFEST');
-      console.log(manifest);
     }
+  }
+
+  private sortPlugins(manifests: Record<string, any>) {
+    const sorted: string[] = [];
+    const visited = new Set<string>();
+
+    const visit = (name: string) => {
+      if (visited.has(name)) return;
+
+      const plugin = manifests[name];
+      if (!plugin) return;
+
+      visited.add(name);
+
+      const deps = plugin.dependencies || [];
+
+      for (const dep of deps) {
+        visit(dep);
+      }
+
+      sorted.push(name);
+    };
+
+    for (const name of Object.keys(manifests)) {
+      visit(name);
+    }
+
+    return sorted;
   }
 }
