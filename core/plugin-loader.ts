@@ -7,6 +7,7 @@ import { AdminRegistry } from './registry/admin.registry';
 
 import { HookSystem } from './hooks';
 import { Container } from './container';
+import { PluginContext } from './plugin-context';
 
 export class PluginLoader {
   constructor(
@@ -77,33 +78,25 @@ export class PluginLoader {
       const plugin = pluginModule.default;
       console.log("HAS onEnable:", plugin.onEnable);
 
-      const ctx = {
-        events: this.hooks.forPlugin(plugin.name),
+      const ctx = new PluginContext(
+        { name: plugin.name, version: plugin.version },
+        this.hooks,
+        this.container,
+        {
+          route: this.routeRegistry,
+          permission: this.permissionRegistry,
+          admin: this.adminRegistry,
+        }
+      );
 
-        services: {
-          logger: this.container.get('logger'),
-          config: this.container.get('config'),
-        },
-
-        register: {
-          routes: (r: any) => this.routeRegistry.register(r),
-          permissions: (p: any) => this.permissionRegistry.register(p),
-          adminNavigation: (a: any) => this.adminRegistry.register(a),
-        },
-      };
-
-      // STEP 1: plugin init
+      // lifecycle 1
       await plugin.onLoad?.(ctx);
 
       // event after load
       await this.hooks.emit('plugin.loaded', plugin);
 
-      // STEP 2: register
-      this.routeRegistry.register(plugin.routes ?? []);
-      this.permissionRegistry.register(plugin.permissions ?? []);
-      this.adminRegistry.register(plugin.adminNavigation ?? []);
-
-      // STEP 3: final lifecycle
+      
+      // lifecycle 2 (activation)
       await plugin.onEnable?.(ctx);
 
       await this.hooks.emit('plugin.afterLoad', plugin);

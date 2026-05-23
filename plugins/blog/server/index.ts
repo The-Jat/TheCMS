@@ -22,16 +22,18 @@ const plugin: PluginDefinition = {
     },
   ],
 
-  onLoad({ events, services }) {
-    services.logger.log('Blog plugin started');
+  onLoad(ctx) {
+    ctx.services.logger.log('Blog loaded');
 
-    events.on('user.created', (user) => {
-      services.logger.log('BLOG GOT EVENT:', user);
-    });
+    ctx.register.routes(this.routes);
+    ctx.register.permissions(this.permissions);
+    ctx.register.adminNavigation(this.adminNavigation);
   },
 
-  onEnable() {
-    console.log('BLOG ENABLED');
+  onEnable(ctx) {
+    ctx.events.on('user.created', (user) => {
+      ctx.services.logger.log('BLOG EVENT:', user);
+    });
   },
 };
 
