@@ -5,14 +5,19 @@ import { RequestContext } from './request-context';
 import { PermissionService } from '../auth/permission.service';
 import { PluginAdminService } from '../admin/plugin-admin.service';
 import { HookSystem } from '../hooks';
+import { RouteResolver } from '../router/route-resolver';
+import { PluginResolver } from '../plugin-resolver';
+import { AuthorizationGate } from '../auth/authorization-gate';
 
 export class RequestPipelineEngine {
     constructor(
-        private routeRegistry: RouteRegistry,
         private pluginLoader: any,
         private auth: PermissionService,
         private hooks: HookSystem,
         private middleware: MiddlewarePipeline,
+        private routeResolver: RouteResolver,
+        private pluginResolver: PluginResolver,
+        private authGate: AuthorizationGate,
     ) { }
 
     async execute(req: any, res: any) {
@@ -20,50 +25,37 @@ export class RequestPipelineEngine {
         // execute global middleware
         await this.middleware.execute(req, res);
 
-        let routeDef: any = null;
+        const resolved =
+            this.routeResolver.resolve(req);
 
-        for (const route of this.routeRegistry.getAll()) {
-
-            if (
-                route.method.toUpperCase() !==
-                req.method.toUpperCase()
-            ) {
-                continue;
-            }
-
-            const matched = route.matcher(req.path);
-
-            if (matched) {
-                routeDef = route;
-
-                req.params = matched.params;
-
-                break;
-            }
+        if (!resolved) {
+            return res.status(404).json({
+                error: 'Route not found',
+            });
         }
-        if (!routeDef) {
+
+        req.params = resolved.params;
+
+        const route = resolved.route;
+        if (!route) {
             res.status(404).json({ error: 'Route not found' });
             return;
         }
 
         // permission check
-        if (routeDef.permission) {
-            const allowed = this.auth.hasPermission(
+        const authorized =
+            this.authGate.authorize(
                 req.user,
-                routeDef.permission
+                route
             );
-
-            if (!allowed) {
-                return res.status(403).json({
-                    error: 'Forbidden'
-                });
-            }
+        if (!authorized) {
+            return res.status(403).json({
+                error: 'Forbidden'
+            });
         }
 
-        const plugin = this.pluginLoader
-            .getPlugins()
-            .find((p: any) => p.plugin.name === routeDef.pluginName)
-            ?.plugin;
+        const plugin =
+            this.pluginResolver.resolve(route);
 
         if (!plugin) {
             res.status(500).json({ error: 'Plugin not found' });
@@ -73,10 +65,10 @@ export class RequestPipelineEngine {
         await this.hooks.emit('handler.before', {
             req,
             res,
-            route: routeDef,
+            route: route,
         });
 
-        const handler = plugin.handlers?.[routeDef.handler];
+        const handler = plugin.handlers?.[route.handler];
 
         if (!handler) {
             res.status(500).json({ error: 'Handler missing' });
@@ -90,7 +82,7 @@ export class RequestPipelineEngine {
         await this.hooks.emit('handler.after', {
             req,
             res,
-            route: routeDef,
+            route: route,
             result,
         });
 

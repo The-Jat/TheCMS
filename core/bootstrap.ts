@@ -10,6 +10,9 @@ import { PluginAdminService } from './admin/plugin-admin.service';
 import { RequestPipelineEngine } from './http/request-pipeline.engine';
 import { PermissionService } from './auth/permission.service';
 import { MiddlewarePipeline } from './http/middleware';
+import { RouteResolver } from './router/route-resolver';
+import { PluginResolver } from './plugin-resolver';
+import { AuthorizationGate } from './auth/authorization-gate';
 
 async function bootstrap() {
   const container = new Container();
@@ -104,12 +107,18 @@ async function bootstrap() {
   // HTTP server
   const admin = new PluginAdminService(loader);
 
+  const routeResolver = new RouteResolver(routeRegistry);
+  const pluginResolver = new PluginResolver(loader);
+  const authGate = new AuthorizationGate(auth);
+
   const reqPipeline = new RequestPipelineEngine(
-    routeRegistry,
     loader,
     auth,
     hooks,
     pipeline,
+    routeResolver,
+    pluginResolver,
+    authGate
   );
   const server = new HttpServer(routeRegistry, loader, admin, reqPipeline);
 
