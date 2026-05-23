@@ -7,6 +7,9 @@ import { PermissionRegistry } from './registry/permission.registry';
 import { RouteRegistry } from './registry/route.registry';
 import { HttpServer } from './http/server';
 import { PluginAdminService } from './admin/plugin-admin.service';
+import { RequestPipelineEngine } from './http/request-pipeline.engine';
+import { PermissionService } from './auth/permission.service';
+import { MiddlewarePipeline } from './http/middleware';
 
 async function bootstrap() {
   const container = new Container();
@@ -18,13 +21,10 @@ async function bootstrap() {
 
   const hooks = new HookSystem();
 
+  // Registeries
   const routeRegistry = new RouteRegistry();
-
-  const permissionRegistry =
-    new PermissionRegistry();
-
-  const adminRegistry =
-    new AdminRegistry();
+  const permissionRegistry = new PermissionRegistry();
+  const adminRegistry = new AdminRegistry();
 
   hooks.on('plugin.beforeLoad', (manifest) => {
     console.log('🟡 BEFORE LOAD:', manifest.name);
@@ -62,6 +62,22 @@ async function bootstrap() {
     container,
   );
 
+  const auth = new PermissionService();
+  const pipeline = new MiddlewarePipeline();
+
+  // register middleware 
+  pipeline.use(async (req: any, res, next) => {
+    console.log(`Incoming: ${req.method} ${req.path}`);
+
+    req.user = {
+      id: 1,
+      name: 'TheJat',
+      permissions: ['blog.read'],
+    };
+
+    next();
+  });
+
   await loader.discover();
 
   console.log('ROUTES');
@@ -85,14 +101,17 @@ async function bootstrap() {
     name: 'TheJat',
   });
 
-  // test hot reload
-  // setTimeout(async () => {
-  //   await loader.reloadPlugin('blog');
-  // }, 3000);
-
   // HTTP server
   const admin = new PluginAdminService(loader);
-  const server = new HttpServer(routeRegistry, loader, admin);
+
+  const reqPipeline = new RequestPipelineEngine(
+    routeRegistry,
+    loader,
+    auth,
+    hooks,
+    pipeline,
+  );
+  const server = new HttpServer(routeRegistry, loader, admin, reqPipeline);
 
   const app = server.init();
   server.listen(3000);
