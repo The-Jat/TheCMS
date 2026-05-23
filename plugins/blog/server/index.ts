@@ -22,9 +22,11 @@ const plugin: PluginDefinition = {
     },
   ],
 
-  onLoad({ events }) {
+  onLoad({ events, services }) {
+    services.logger.log('Blog plugin started');
+
     events.on('user.created', (user) => {
-      console.log('BLOG GOT EVENT:', user);
+      services.logger.log('BLOG GOT EVENT:', user);
     });
   },
 

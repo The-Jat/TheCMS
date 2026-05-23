@@ -1,3 +1,4 @@
+import { Container } from './container';
 import { HookSystem } from './hooks';
 
 import { PluginLoader } from './plugin-loader';
@@ -6,6 +7,13 @@ import { PermissionRegistry } from './registry/permission.registry';
 import { RouteRegistry } from './registry/route.registry';
 
 async function bootstrap() {
+  const container = new Container();
+  container.register('logger', console);
+
+  container.register('config', {
+    appName: 'TheCMS',
+  });
+
   const hooks = new HookSystem();
 
   const routeRegistry = new RouteRegistry();
@@ -33,6 +41,7 @@ async function bootstrap() {
     permissionRegistry,
     adminRegistry,
     hooks,
+    container,
   );
 
   await loader.discover();
@@ -55,7 +64,7 @@ async function bootstrap() {
   // Emitting scoped event 2:
   await hooks.emit('blog:user.created', {
     id: 1,
-    name: 'Manish',
+    name: 'TheJat',
   });
 }
 

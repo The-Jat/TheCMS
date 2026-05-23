@@ -6,6 +6,7 @@ import { PermissionRegistry } from './registry/permission.registry';
 import { AdminRegistry } from './registry/admin.registry';
 
 import { HookSystem } from './hooks';
+import { Container } from './container';
 
 export class PluginLoader {
   constructor(
@@ -13,6 +14,7 @@ export class PluginLoader {
     private readonly permissionRegistry: PermissionRegistry,
     private readonly adminRegistry: AdminRegistry,
     private readonly hooks: HookSystem,
+    private readonly container: Container,
   ) {}
   async discover() {
     const pluginsDir = path.join(process.cwd(), 'plugins');
@@ -77,6 +79,11 @@ export class PluginLoader {
 
       const ctx = {
         events: this.hooks.forPlugin(plugin.name),
+
+        services: {
+          logger: this.container.get('logger'),
+          config: this.container.get('config'),
+        },
 
         register: {
           routes: (r: any) => this.routeRegistry.register(r),
