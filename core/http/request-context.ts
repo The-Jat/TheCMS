@@ -1,3 +1,5 @@
+import { Request, Response } from 'express';
+
 export class RequestContext {
   constructor(
     public req: Request,
@@ -6,17 +8,4 @@ export class RequestContext {
     public user?: any
   ) {}
 
-  json(data: any) {
-    return {
-      type: 'json',
-      data,
-    };
-  }
-
-  status(code: number) {
-    return {
-      type: 'status',
-      code,
-    };
-  }
 }

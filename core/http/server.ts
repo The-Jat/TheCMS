@@ -60,7 +60,7 @@ export class HttpServer {
                     if (!routeDef) {
                         return res.status(404).json({ error: 'Route not found' });
                     }
-                     
+
                     // permission check
                     if (routeDef.permission) {
                         const allowed = this.auth.hasPermission(
@@ -101,8 +101,27 @@ export class HttpServer {
                     const ctx = new RequestContext(req, res);
 
                     const result = await handler(ctx);
+
+                    // safety check
                     if (res.headersSent) return;
 
+                    // handle undefined
+                    if (result === undefined) {
+                        return res.end();
+                    }
+
+                    // handle structured context response
+                    if (result && typeof result === 'object' && '__type' in result) {
+                        if (result.__type === 'json') {
+                            return res.json(result.data);
+                        }
+
+                        if (result.__type === 'status') {
+                            return res.status(result.code);
+                        }
+                    }
+
+                    // fallback
                     await this.pluginLoader.hooks.emit('handler.after', {
                         req,
                         res,

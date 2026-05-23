@@ -15,8 +15,7 @@ const plugin: PluginDefinition = {
     },
   ],
   handlers: {
-    getPosts: (ctx) => {
-      // ctx.res.status(403).json({ error: "Blocked by plugin test" });
+    getPosts: async (ctx) => {
       return [
         { id: 1, title: 'Secure Blog Post' },
         { id: 2, title: 'Permission Protected Data' },
