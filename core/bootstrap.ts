@@ -46,9 +46,16 @@ async function bootstrap() {
   console.log('ADMIN NAVIGATION');
   console.log(adminRegistry.getAll());
 
-  await hooks.forPlugin('blog').emit('user.created', {
+  // Emitting scoped event 1:
+  // await hooks.forPlugin('blog').emit('user.created', {
+  //   id: 1,
+  //   name: 'TheJat',
+  // });
+
+  // Emitting scoped event 2:
+  await hooks.emit('blog:user.created', {
     id: 1,
-    name: 'TheJat',
+    name: 'Manish',
   });
 }
 
