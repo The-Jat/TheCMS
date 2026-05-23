@@ -15,14 +15,10 @@ export class PluginLoader {
     private readonly hooks: HookSystem,
   ) {}
   async discover() {
-    const pluginsDir = path.join(
-      process.cwd(),
-      'plugins',
-    );
+    const pluginsDir = path.join(process.cwd(), 'plugins');
 
     if (!fs.existsSync(pluginsDir)) {
       console.log('Plugins directory not found');
-
       return [];
     }
 
@@ -36,54 +32,53 @@ export class PluginLoader {
       );
 
       if (!fs.existsSync(manifestPath)) {
-        console.log(
-          `Skipping ${pluginName}: plugin.json missing`,
-        );
-
+        console.log(`Skipping ${pluginName}: plugin.json missing`);
         continue;
       }
 
+      // 1. LOAD MANIFEST FIRST
       const manifest = JSON.parse(
         fs.readFileSync(manifestPath, 'utf-8'),
       );
 
+      // 2. BEFORE LOAD HOOK
+      await this.hooks.emit('plugin.beforeLoad', manifest);
+
+      // 3. CHECK ENABLED BEFORE DOING ANYTHING
+      if (!manifest.enabled) {
+        console.log(`Skipping ${manifest.name}: disabled`);
+        continue;
+      }
+
+      // 4. RESOLVE ENTRY
       const entryPath = path.join(
         pluginsDir,
         pluginName,
         manifest.entry,
       );
 
+      // 5. LOAD PLUGIN
       const pluginModule = await import(
         pathToFileURL(entryPath).href
       );
 
       const plugin = pluginModule.default;
 
-      await this.hooks.emit(`plugin.loaded`, plugin);
+      // 6. LOADED HOOK
+      await this.hooks.emit('plugin.loaded', plugin);
 
       console.log('PLUGIN');
       console.log(plugin);
 
-      this.routeRegistry.register(
-        plugin.routes ?? [],
-      );
+      // 7. REGISTER INTO KERNEL
+      this.routeRegistry.register(plugin.routes ?? []);
+      this.permissionRegistry.register(plugin.permissions ?? []);
+      this.adminRegistry.register(plugin.adminNavigation ?? []);
 
-      this.permissionRegistry.register(
-        plugin.permissions ?? [],
-      );
+      // 8. AFTER LOAD HOOK
+      await this.hooks.emit('plugin.afterLoad', plugin);
 
-      this.adminRegistry.register(
-        plugin.adminNavigation ?? [],
-      );
-
-      if (!manifest.enabled) {
-        console.log(
-          `Skipping ${manifest.name}: disabled`,
-        );
-
-        continue;
-      }
-
+      // 9. DEBUG OUTPUT
       console.log('PLUGIN MANIFEST');
       console.log(manifest);
     }

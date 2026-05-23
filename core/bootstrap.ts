@@ -15,9 +15,17 @@ async function bootstrap() {
 
   const adminRegistry =
     new AdminRegistry();
-  
+ 
+  hooks.on('plugin.beforeLoad', (manifest) => {
+    console.log('🟡 BEFORE LOAD:', manifest.name);
+  });
+
   hooks.on('plugin.loaded', (plugin) => {
-    console.log('HOOK FIRED -> plugin.loaded:', plugin.name);
+    console.log('🟢 LOADED:', plugin.name);
+  });
+
+  hooks.on('plugin.afterLoad', (plugin) => {
+    console.log('🔵 AFTER LOAD:', plugin.name);
   });
 
   const loader = new PluginLoader(
