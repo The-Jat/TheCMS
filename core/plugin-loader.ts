@@ -258,4 +258,8 @@ export class PluginLoader {
 
     console.log(`🟢 Plugin reloaded successfully: ${name}`);
   }
+
+  getPlugins() {
+    return Array.from(this.loadedPlugins.values());
+  }
 }

@@ -10,8 +10,17 @@ const plugin: PluginDefinition = {
     {
       method: 'GET',
       path: '/blog',
+      handler: 'getPosts',
     },
   ],
+  handlers: {
+    getPosts: (req, res) => {
+      res.json([
+        {id: 1, title: 'Hello Blog'},
+        {id: 2, title: 'Second Post'},
+      ]);
+    }
+  },
 
   permissions: ['blog.read'],
 

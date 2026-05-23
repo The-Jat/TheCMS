@@ -7,6 +7,7 @@ export interface RouteDefinition {
     | 'DELETE';
 
   path: string;
+  handler: string;
 }
 
 export interface AdminNavigationItem {

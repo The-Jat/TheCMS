@@ -74,7 +74,7 @@ async function bootstrap() {
   }, 3000);
 
   // HTTP server
-  const server = new HttpServer(routeRegistry);
+  const server = new HttpServer(routeRegistry, loader);
 
   const app = server.init();
 
