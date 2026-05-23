@@ -38,6 +38,22 @@ async function bootstrap() {
     console.log('🔵 AFTER LOAD:', plugin.name);
   });
 
+  hooks.on('request.before', ({ req }) => {
+    console.log('🟡 REQUEST BEFORE:', req.method, req.path);
+  });
+
+  hooks.on('request.after', ({ req }) => {
+    console.log('🟢 REQUEST AFTER:', req.method, req.path);
+  });
+
+  hooks.on('handler.before', ({ route }) => {
+    console.log('🔵 HANDLER BEFORE:', route.path);
+  });
+
+  hooks.on('handler.after', ({ route }) => {
+    console.log('🟣 HANDLER AFTER:', route.path);
+  });
+
   const loader = new PluginLoader(
     routeRegistry,
     permissionRegistry,

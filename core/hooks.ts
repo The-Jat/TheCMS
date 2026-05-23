@@ -26,7 +26,7 @@ export class HookSystem {
     this.listeners[event] = handlers.filter(h => h !== callback);
   }
 
-  // 👇 NEW: plugin scoped wrapper
+  // plugin scoped wrapper
   forPlugin(pluginName: string) {
     return {
       on: (event: string, cb: EventCallback) => {

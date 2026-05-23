@@ -43,6 +43,7 @@ export class HttpServer {
             this.app[route.method.toLowerCase() as any](
                 route.path,
                 async (req, res) => {
+                    await this.pluginLoader.hooks.emit('request.before', { req, res });
 
                     // middleware execution
                     await this.pipeline.execute(req, res);
@@ -83,6 +84,12 @@ export class HttpServer {
                         return res.status(500).json({ error: 'Plugin not found' });
                     }
 
+                    await this.pluginLoader.hooks.emit('handler.before', {
+                        req,
+                        res,
+                        route: routeDef,
+                    });
+
                     // handler execution
                     const handler = plugin.handlers?.[routeDef.handler];
 
@@ -92,7 +99,18 @@ export class HttpServer {
 
                     const ctx = new RequestContext(req, res);
 
-                    return handler(ctx);
+                    const result = handler(ctx);
+
+                    await this.pluginLoader.hooks.emit('handler.after', {
+                        req,
+                        res,
+                        route: routeDef,
+                        result,
+                    });
+
+                    await this.pluginLoader.hooks.emit('request.after', { req, res });
+
+                    return result;
                 }
             );
         }
