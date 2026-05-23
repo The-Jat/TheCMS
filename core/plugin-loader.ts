@@ -246,9 +246,9 @@ export class PluginLoader {
     await this.hooks.emit('plugin.loaded', plugin);
 
     // 9. REGISTER SYSTEMS AGAIN (IMPORTANT)
-    this.routeRegistry.register(plugin.routes ?? []);
-    this.permissionRegistry.register(plugin.permissions ?? []);
-    this.adminRegistry.register(plugin.adminNavigation ?? []);
+    this.routeRegistry.replace(plugin.routes ?? [], plugin.name);
+    this.permissionRegistry.replace(plugin.permissions ?? [], plugin.name);
+    this.adminRegistry.replace(plugin.adminNavigation ?? [], plugin.name);
 
     // 10. LIFECYCLE: ENABLE
     await plugin.onEnable?.(ctx);
