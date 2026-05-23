@@ -5,6 +5,7 @@ import { PluginLoader } from './plugin-loader';
 import { AdminRegistry } from './registry/admin.registry';
 import { PermissionRegistry } from './registry/permission.registry';
 import { RouteRegistry } from './registry/route.registry';
+import { HttpServer } from './http/server';
 
 async function bootstrap() {
   const container = new Container();
@@ -71,6 +72,13 @@ async function bootstrap() {
   setTimeout(async () => {
     await loader.reloadPlugin('blog');
   }, 3000);
+
+  // HTTP server
+  const server = new HttpServer(routeRegistry);
+
+  const app = server.init();
+
+  server.listen(3000);
 }
 
 bootstrap();
