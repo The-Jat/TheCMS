@@ -44,6 +44,9 @@ export class HttpServer {
                 route.path,
                 async (req, res) => {
 
+                    // middleware execution
+                    await this.pipeline.execute(req, res);
+
                     const routeDef = this.routeRegistry
                         .getAll()
                         .find(
@@ -55,7 +58,20 @@ export class HttpServer {
                     if (!routeDef) {
                         return res.status(404).json({ error: 'Route not found' });
                     }
+                     
+                    // permission check
+                    if (routeDef.permission) {
+                        const allowed = this.auth.hasPermission(
+                            req.user,
+                            routeDef.permission
+                        );
 
+                        if (!allowed) {
+                            return res.status(403).json({ error: 'Forbidden' });
+                        }
+                    }
+
+                    // plugin resolution
                     const plugin = this.pluginLoader
                         .getPlugins()
                         .find(
@@ -67,6 +83,7 @@ export class HttpServer {
                         return res.status(500).json({ error: 'Plugin not found' });
                     }
 
+                    // handler execution
                     const handler = plugin.handlers?.[routeDef.handler];
 
                     if (!handler) {

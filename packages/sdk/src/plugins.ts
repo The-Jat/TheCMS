@@ -9,6 +9,7 @@ export interface RouteDefinition {
   path: string;
   handler: string;
   permission?: string;
+  middlewares?: string[];
 }
 
 export interface AdminNavigationItem {

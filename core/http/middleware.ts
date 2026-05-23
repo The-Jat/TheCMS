@@ -1,26 +1,23 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
-export type Middleware = (
+export type MiddlewareFn = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: () => void
 ) => void | Promise<void>;
 
 export class MiddlewarePipeline {
-  private middlewares: Middleware[] = [];
+  private middlewares: MiddlewareFn[] = [];
 
-  use(mw: Middleware) {
-    this.middlewares.push(mw);
+  use(fn: MiddlewareFn) {
+    this.middlewares.push(fn);
   }
 
-  async run(req: Request, res: Response) {
-    let index = 0;
-
-    const next = async () => {
-      const mw = this.middlewares[index++];
-      if (mw) await mw(req, res, next);
-    };
-
-    await next();
+  async execute(req: Request, res: Response) {
+    for (const mw of this.middlewares) {
+      await new Promise<void>((resolve) => {
+        mw(req, res, resolve);
+      });
+    }
   }
 }
