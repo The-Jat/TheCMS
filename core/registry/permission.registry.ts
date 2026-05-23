@@ -1,7 +1,9 @@
-export class PermissionRegistry {
-  private permissions: string[] = [];
+import { Permission } from "../../packages/sdk/src/plugins";
 
-  register(permissions: string[]) {
+export class PermissionRegistry {
+  private permissions: Permission[] = [];
+
+  register(permissions: Permission[]) {
     this.permissions.push(...permissions);
   }
 

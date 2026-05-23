@@ -1,7 +1,4 @@
-export interface RouteDefinition {
-  method: string;
-  path: string;
-}
+import { RouteDefinition } from "../../packages/sdk/src/plugins";
 
 export class RouteRegistry {
   private routes: RouteDefinition[] = [];

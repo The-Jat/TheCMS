@@ -1,7 +1,4 @@
-export interface AdminNavigationItem {
-  label: string;
-  path: string;
-}
+import { AdminNavigationItem } from "../../packages/sdk/src/plugins";
 
 export class AdminRegistry {
   private navigation: AdminNavigationItem[] = [];
