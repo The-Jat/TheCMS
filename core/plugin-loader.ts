@@ -86,27 +86,45 @@ export class PluginLoader {
 
   private sortPlugins(manifests: Record<string, any>) {
     const sorted: string[] = [];
+
+    const visiting = new Set<string>();
     const visited = new Set<string>();
+
     const allPlugins = new Set(Object.keys(manifests));
 
     const visit = (name: string) => {
+      const plugin = manifests[name];
+
+      if (!plugin) {
+        throw new Error(`Plugin "${name}" not found`);
+      }
+
+      // already resolved
       if (visited.has(name)) return;
 
-      const plugin = manifests[name];
-      if (!plugin) return;
+      // circular dependency detection
+      if (visiting.has(name)) {
+        throw new Error(
+          `Circular dependency detected at plugin "${name}"`
+        );
+      }
 
-      visited.add(name);
+      visiting.add(name);
 
       const deps = plugin.dependencies || [];
 
       for (const dep of deps) {
         if (!allPlugins.has(dep)) {
           throw new Error(
-            `Missing dependency: ${name} depends on ${dep}`
+            `Missing dependency: "${name}" depends on "${dep}"`
           );
         }
+
         visit(dep);
       }
+
+      visiting.delete(name);
+      visited.add(name);
 
       sorted.push(name);
     };
