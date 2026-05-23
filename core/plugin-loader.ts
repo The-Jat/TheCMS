@@ -1,9 +1,27 @@
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
+import { RouteRegistry } from './registry/route.registry';
+import { PermissionRegistry } from './registry/permission.registry';
+import { AdminRegistry } from './registry/admin.registry';
 
 export class PluginLoader {
+  constructor(
+    private readonly routeRegistry: RouteRegistry,
+    private readonly permissionRegistry: PermissionRegistry,
+    private readonly adminRegistry: AdminRegistry,
+  ) {}
   async discover() {
-    const pluginsDir = path.join(process.cwd(), 'plugins');
+    const pluginsDir = path.join(
+      process.cwd(),
+      'plugins',
+    );
+
+    if (!fs.existsSync(pluginsDir)) {
+      console.log('Plugins directory not found');
+
+      return [];
+    }
 
     const plugins = fs.readdirSync(pluginsDir);
 
@@ -14,13 +32,55 @@ export class PluginLoader {
         'plugin.json',
       );
 
+      if (!fs.existsSync(manifestPath)) {
+        console.log(
+          `Skipping ${pluginName}: plugin.json missing`,
+        );
+
+        continue;
+      }
+
       const manifest = JSON.parse(
         fs.readFileSync(manifestPath, 'utf-8'),
       );
 
-      if (!manifest.enabled) continue;
+      const entryPath = path.join(
+        pluginsDir,
+        pluginName,
+        manifest.entry,
+      );
 
-      console.log(`Loading plugin: ${manifest.name}`);
+      const pluginModule = await import(
+        pathToFileURL(entryPath).href
+      );
+
+      const plugin = pluginModule.default;
+
+      console.log('PLUGIN');
+      console.log(plugin);
+
+      this.routeRegistry.register(
+        plugin.routes ?? [],
+      );
+
+      this.permissionRegistry.register(
+        plugin.permissions ?? [],
+      );
+
+      this.adminRegistry.register(
+        plugin.adminNavigation ?? [],
+      );
+
+      if (!manifest.enabled) {
+        console.log(
+          `Skipping ${manifest.name}: disabled`,
+        );
+
+        continue;
+      }
+
+      console.log('PLUGIN MANIFEST');
+      console.log(manifest);
     }
   }
 }
