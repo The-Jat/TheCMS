@@ -11,13 +11,14 @@ const plugin: PluginDefinition = {
       method: 'GET',
       path: '/blog',
       handler: 'getPosts',
+      permission: 'blog.read',
     },
   ],
   handlers: {
     getPosts: (ctx) => {
       return ctx.json([
-        { id: 1, title: 'Hello Blog' },
-        { id: 2, title: 'CMS is alive' },
+        { id: 1, title: 'Secure Blog Post' },
+        { id: 2, title: 'Permission Protected Data' },
       ]);
     },
   },

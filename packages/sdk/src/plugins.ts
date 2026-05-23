@@ -8,6 +8,7 @@ export interface RouteDefinition {
 
   path: string;
   handler: string;
+  permission?: string;
 }
 
 export interface AdminNavigationItem {

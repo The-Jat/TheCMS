@@ -2,10 +2,12 @@ import express from 'express';
 import { RouteRegistry } from '../registry/route.registry';
 import { MiddlewarePipeline } from './middleware';
 import { RequestContext } from './request-context';
+import { PermissionService } from '../auth/permission.service';
 
 export class HttpServer {
     private app = express();
     private pipeline = new MiddlewarePipeline();
+    private auth = new PermissionService();
 
     constructor(
         private routeRegistry: RouteRegistry,
@@ -21,7 +23,11 @@ export class HttpServer {
         // Register middleware
         this.pipeline.use(async (req, res, next) => {
             console.log(`Incoming: ${req.method} ${req.path}`);
-            req.user = { id: 1, role: 'admin' }; // mock auth
+            req.user = {
+                id: 1,
+                name: 'TheJat',
+                permissions: ['blog.read'], // mock user permissions
+            };
             next();
         });
 
@@ -51,7 +57,19 @@ export class HttpServer {
                         return res.status(500).json({ error: 'Handler missing' });
                     }
 
-                    const ctx = new RequestContext(req, res, plugin);
+                    const user = req.user || null;
+
+                    // 🔐 FIND ROUTE DEFINITION
+                    const routeDef = plugin.routes.find(
+                        (r: any) => r.path === route.path
+                    );
+
+                    // 🔐 PERMISSION CHECK
+                    if (!this.auth.hasPermission(user, routeDef?.permission)) {
+                        return res.status(403).json({ error: 'Forbidden' });
+                    }
+
+                    const ctx = new RequestContext(req, res, plugin, user);
 
                     return handler(ctx);
                 }
