@@ -73,12 +73,30 @@ export class PluginLoader {
       );
 
       const plugin = pluginModule.default;
+      console.log("HAS onEnable:", plugin.onEnable);
 
+      const ctx = {
+        hooks: this.hooks,
+        register: {
+          routes: (r: any) => this.routeRegistry.register(r),
+          permissions: (p: any) => this.permissionRegistry.register(p),
+          adminNavigation: (a: any) => this.adminRegistry.register(a),
+        },
+      };
+
+      // STEP 1: plugin init
+      await plugin.onLoad?.(ctx);
+
+      // event after load
       await this.hooks.emit('plugin.loaded', plugin);
 
+      // STEP 2: register
       this.routeRegistry.register(plugin.routes ?? []);
       this.permissionRegistry.register(plugin.permissions ?? []);
       this.adminRegistry.register(plugin.adminNavigation ?? []);
+
+      // STEP 3: final lifecycle
+      await plugin.onEnable?.(ctx);
 
       await this.hooks.emit('plugin.afterLoad', plugin);
     }

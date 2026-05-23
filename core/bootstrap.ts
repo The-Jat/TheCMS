@@ -45,6 +45,11 @@ async function bootstrap() {
 
   console.log('ADMIN NAVIGATION');
   console.log(adminRegistry.getAll());
+
+  await hooks.emit('user.created', {
+    id: 1,
+    name: 'TheJat',
+  });
 }
 
 bootstrap();

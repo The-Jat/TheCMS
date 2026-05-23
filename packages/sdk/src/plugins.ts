@@ -27,3 +27,16 @@ export interface PluginDefinition {
   adminNavigation?: AdminNavigationItem[];
   dependencies?: string[];
 }
+
+export interface PluginContext {
+  hooks: {
+    on: (event: string, cb: Function) => void;
+    emit: (event: string, data?: any) => Promise<void>;
+  };
+
+  register: {
+    routes: (r: RouteDefinition[]) => void;
+    permissions: (p: Permission[]) => void;
+    adminNavigation: (a: AdminNavigationItem[]) => void;
+  };
+}
