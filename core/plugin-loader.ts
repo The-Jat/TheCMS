@@ -5,11 +5,14 @@ import { RouteRegistry } from './registry/route.registry';
 import { PermissionRegistry } from './registry/permission.registry';
 import { AdminRegistry } from './registry/admin.registry';
 
+import { HookSystem } from './hooks';
+
 export class PluginLoader {
   constructor(
     private readonly routeRegistry: RouteRegistry,
     private readonly permissionRegistry: PermissionRegistry,
     private readonly adminRegistry: AdminRegistry,
+    private readonly hooks: HookSystem,
   ) {}
   async discover() {
     const pluginsDir = path.join(
@@ -55,6 +58,8 @@ export class PluginLoader {
       );
 
       const plugin = pluginModule.default;
+
+      await this.hooks.emit(`plugin.loaded`, plugin);
 
       console.log('PLUGIN');
       console.log(plugin);

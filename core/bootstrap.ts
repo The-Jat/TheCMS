@@ -1,9 +1,13 @@
+import { HookSystem } from './hooks';
+
 import { PluginLoader } from './plugin-loader';
 import { AdminRegistry } from './registry/admin.registry';
 import { PermissionRegistry } from './registry/permission.registry';
 import { RouteRegistry } from './registry/route.registry';
 
 async function bootstrap() {
+  const hooks = new HookSystem();
+
   const routeRegistry = new RouteRegistry();
 
   const permissionRegistry =
@@ -11,11 +15,16 @@ async function bootstrap() {
 
   const adminRegistry =
     new AdminRegistry();
+  
+  hooks.on('plugin.loaded', (plugin) => {
+    console.log('HOOK FIRED -> plugin.loaded:', plugin.name);
+  });
 
   const loader = new PluginLoader(
     routeRegistry,
     permissionRegistry,
     adminRegistry,
+    hooks,
   );
 
   await loader.discover();
