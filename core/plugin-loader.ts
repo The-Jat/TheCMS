@@ -10,7 +10,7 @@ import { Container } from './container';
 import { PluginContext } from './plugin-context';
 
 export class PluginLoader {
-    private loadedPlugins = new Map<string, any>();
+  private loadedPlugins = new Map<string, any>();
 
   constructor(
     private readonly routeRegistry: RouteRegistry,
@@ -18,7 +18,7 @@ export class PluginLoader {
     private readonly adminRegistry: AdminRegistry,
     private readonly hooks: HookSystem,
     private readonly container: Container,
-  ) {}
+  ) { }
   async discover() {
     const pluginsDir = path.join(process.cwd(), 'plugins');
 
@@ -79,6 +79,21 @@ export class PluginLoader {
 
       const plugin = pluginModule.default;
 
+      this.routeRegistry.register(
+        plugin.routes ?? [],
+        plugin.name
+      );
+
+      this.permissionRegistry.register(
+        plugin.permissions ?? [],
+        plugin.name
+      );
+
+      this.adminRegistry.register(
+        plugin.adminNavigation ?? [],
+        plugin.name
+      );
+
       const ctx = new PluginContext(
         { name: plugin.name, version: plugin.version },
         this.hooks,
@@ -103,7 +118,7 @@ export class PluginLoader {
       // event after load
       await this.hooks.emit('plugin.loaded', plugin);
 
-      
+
       // lifecycle 2 (activation)
       await plugin.onEnable?.(ctx);
 

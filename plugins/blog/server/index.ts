@@ -32,13 +32,13 @@ const plugin: PluginDefinition = {
     },
   ],
 
-  onLoad(ctx) {
-    ctx.services.logger.log('Blog loaded');
+  // onLoad(ctx) {
+  //   ctx.services.logger.log('Blog loaded');
 
-    ctx.register.routes(this.routes);
-    ctx.register.permissions(this.permissions);
-    ctx.register.adminNavigation(this.adminNavigation);
-  },
+  //   ctx.register.routes(this.routes ?? [], plugin.name);
+  //   ctx.register.permissions(this.permissions);
+  //   ctx.register.adminNavigation(this.adminNavigation);
+  // },
 
   onEnable(ctx) {
     ctx.events.on('user.created', (user) => {

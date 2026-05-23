@@ -17,11 +17,11 @@ export class PluginContext {
     config: any;
   };
 
-  public readonly register: {
-    routes: (r: any) => void;
-    permissions: (p: any) => void;
-    adminNavigation: (a: any) => void;
-  };
+//   public readonly register: {
+//     routes: (r: any) => void;
+//     permissions: (p: any) => void;
+//     adminNavigation: (a: any) => void;
+//   };
 
   public state: Record<string, any> = {};
 
@@ -47,10 +47,10 @@ export class PluginContext {
     };
 
     // controlled registry access (IMPORTANT FIX)
-    this.register = {
-      routes: (r) => this.registries.route.register(r),
-      permissions: (p) => this.registries.permission.register(p),
-      adminNavigation: (a) => this.registries.admin.register(a),
-    };
+    // this.register = {
+    //   routes: (r) => this.registries.route.register(r),
+    //   permissions: (p) => this.registries.permission.register(p),
+    //   adminNavigation: (a) => this.registries.admin.register(a),
+    // };
   }
 }

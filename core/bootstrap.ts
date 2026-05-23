@@ -6,6 +6,7 @@ import { AdminRegistry } from './registry/admin.registry';
 import { PermissionRegistry } from './registry/permission.registry';
 import { RouteRegistry } from './registry/route.registry';
 import { HttpServer } from './http/server';
+import { PluginAdminService } from './admin/plugin-admin.service';
 
 async function bootstrap() {
   const container = new Container();
@@ -24,7 +25,7 @@ async function bootstrap() {
 
   const adminRegistry =
     new AdminRegistry();
- 
+
   hooks.on('plugin.beforeLoad', (manifest) => {
     console.log('🟡 BEFORE LOAD:', manifest.name);
   });
@@ -69,15 +70,15 @@ async function bootstrap() {
   });
 
   // test hot reload
-  setTimeout(async () => {
-    await loader.reloadPlugin('blog');
-  }, 3000);
+  // setTimeout(async () => {
+  //   await loader.reloadPlugin('blog');
+  // }, 3000);
 
   // HTTP server
-  const server = new HttpServer(routeRegistry, loader);
+  const admin = new PluginAdminService(loader);
+  const server = new HttpServer(routeRegistry, loader, admin);
 
   const app = server.init();
-
   server.listen(3000);
 }
 

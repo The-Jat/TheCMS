@@ -3,6 +3,7 @@ import { RouteRegistry } from '../registry/route.registry';
 import { MiddlewarePipeline } from './middleware';
 import { RequestContext } from './request-context';
 import { PermissionService } from '../auth/permission.service';
+import { PluginAdminService } from '../admin/plugin-admin.service';
 
 export class HttpServer {
     private app = express();
@@ -12,15 +13,13 @@ export class HttpServer {
     constructor(
         private routeRegistry: RouteRegistry,
         private pluginLoader: any,
+        private admin: PluginAdminService,
     ) { }
 
     init() {
         this.app.use(express.json());
 
-        // attach routes dynamically
-        this.bindRoutes();
-
-        // Register middleware
+        // register middleware first
         this.pipeline.use(async (req, res, next) => {
             console.log(`Incoming: ${req.method} ${req.path}`);
             req.user = {
@@ -30,6 +29,9 @@ export class HttpServer {
             };
             next();
         });
+
+        // bind routes
+        this.bindRoutes();
 
         return this.app;
     }
@@ -42,49 +44,57 @@ export class HttpServer {
                 route.path,
                 async (req, res) => {
 
-                    await this.pipeline.run(req, res);
+                    const routeDef = this.routeRegistry
+                        .getAll()
+                        .find(
+                            (r: any) =>
+                                r.method === req.method &&
+                                r.path === req.path
+                        );
 
-                    const plugin = this.findPluginForRoute(route.path);
-
-                    if (!plugin) {
-                        return res.status(404).json({ error: 'Plugin not found' });
+                    if (!routeDef) {
+                        return res.status(404).json({ error: 'Route not found' });
                     }
 
-                    const handlerName = (route as any).handler;
-                    const handler = plugin.handlers?.[handlerName];
+                    const plugin = this.pluginLoader
+                        .getPlugins()
+                        .find(
+                            (p: any) =>
+                                p.plugin.name === routeDef.pluginName
+                        )?.plugin;
+
+                    if (!plugin) {
+                        return res.status(500).json({ error: 'Plugin not found' });
+                    }
+
+                    const handler = plugin.handlers?.[routeDef.handler];
 
                     if (!handler) {
                         return res.status(500).json({ error: 'Handler missing' });
                     }
 
-                    const user = req.user || null;
-
-                    // 🔐 FIND ROUTE DEFINITION
-                    const routeDef = plugin.routes.find(
-                        (r: any) => r.path === route.path
-                    );
-
-                    // 🔐 PERMISSION CHECK
-                    if (!this.auth.hasPermission(user, routeDef?.permission)) {
-                        return res.status(403).json({ error: 'Forbidden' });
-                    }
-
-                    const ctx = new RequestContext(req, res, plugin, user);
+                    const ctx = new RequestContext(req, res);
 
                     return handler(ctx);
                 }
             );
         }
+
+        this.app.get('/admin/plugins', (req, res) => {
+            res.json(this.admin.getPlugins());
+        });
+
+        this.app.get('/admin/plugins/:name', (req, res) => {
+            const data = this.admin.getPluginDetails(req.params.name);
+
+            if (!data) return res.status(404).json({ error: 'Not found' });
+
+            res.json(data);
+        });
     }
     listen(port: number) {
         this.app.listen(port, () => {
             console.log(`🚀 CMS running on http://localhost:${port}`);
         });
-    }
-
-    private findPluginForRoute(path: string) {
-        return this.pluginLoader.getPlugins?.().find((p: any) =>
-            p.plugin.routes?.some((r: any) => r.path === path)
-        )?.plugin;
     }
 }

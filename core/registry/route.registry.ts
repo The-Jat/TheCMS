@@ -1,12 +1,17 @@
 import { RouteDefinition } from '@thejatcms/sdk';
 
 export class RouteRegistry {
-  private routes: RouteDefinition[] = [];
+  private routes: (RouteDefinition & { pluginName: string })[] = [];
 
   private pluginRoutes = new Map<string, RouteDefinition[]>();
 
-  register(routes: RouteDefinition[], pluginName = 'global') {
-    this.routes.push(...routes);
+  register(routes: RouteDefinition[], pluginName: string) {
+    const enriched = routes.map(r => ({
+      ...r,
+      pluginName,
+    }));
+
+    this.routes.push(...enriched);
 
     const existing = this.pluginRoutes.get(pluginName) || [];
     this.pluginRoutes.set(pluginName, [...existing, ...routes]);
@@ -14,12 +19,18 @@ export class RouteRegistry {
 
   unregister(pluginName: string) {
     const pluginRoutes = this.pluginRoutes.get(pluginName);
-
     if (!pluginRoutes) return;
 
-    // remove plugin routes from global list
     this.routes = this.routes.filter(
-      r => !pluginRoutes.includes(r)
+      r =>
+        !(
+          r.pluginName === pluginName &&
+          pluginRoutes.some(
+            pr =>
+              pr.method === r.method &&
+              pr.path === r.path
+          )
+        )
     );
 
     this.pluginRoutes.delete(pluginName);
