@@ -22,6 +22,7 @@ export class HttpServer {
         // register middleware first
         this.pipeline.use(async (req, res, next) => {
             console.log(`Incoming: ${req.method} ${req.path}`);
+            // Modifying the request attaching info
             req.user = {
                 id: 1,
                 name: 'TheJat',
