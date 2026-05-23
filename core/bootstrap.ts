@@ -46,7 +46,7 @@ async function bootstrap() {
   console.log('ADMIN NAVIGATION');
   console.log(adminRegistry.getAll());
 
-  await hooks.namespace('blog').emit('user.created', {
+  await hooks.forPlugin('blog').emit('user.created', {
     id: 1,
     name: 'TheJat',
   });

@@ -22,10 +22,8 @@ const plugin: PluginDefinition = {
     },
   ],
 
-  onLoad({ hooks }) {
-    const blogHooks = hooks.namespace('blog');
-
-    blogHooks.on('user.created', (user) => {
+  onLoad({ events }) {
+    events.on('user.created', (user) => {
       console.log('BLOG GOT EVENT:', user);
     });
   },

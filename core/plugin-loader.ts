@@ -76,7 +76,8 @@ export class PluginLoader {
       console.log("HAS onEnable:", plugin.onEnable);
 
       const ctx = {
-        hooks: this.hooks,
+        events: this.hooks.forPlugin(plugin.name),
+
         register: {
           routes: (r: any) => this.routeRegistry.register(r),
           permissions: (p: any) => this.permissionRegistry.register(p),
