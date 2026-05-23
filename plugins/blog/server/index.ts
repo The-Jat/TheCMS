@@ -14,12 +14,12 @@ const plugin: PluginDefinition = {
     },
   ],
   handlers: {
-    getPosts: (req, res) => {
-      res.json([
-        {id: 1, title: 'Hello Blog'},
-        {id: 2, title: 'Second Post'},
+    getPosts: (ctx) => {
+      return ctx.json([
+        { id: 1, title: 'Hello Blog' },
+        { id: 2, title: 'CMS is alive' },
       ]);
-    }
+    },
   },
 
   permissions: ['blog.read'],

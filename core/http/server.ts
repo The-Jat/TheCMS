@@ -1,22 +1,32 @@
 import express from 'express';
 import { RouteRegistry } from '../registry/route.registry';
+import { MiddlewarePipeline } from './middleware';
+import { RequestContext } from './request-context';
 
 export class HttpServer {
-  private app = express();
+    private app = express();
+    private pipeline = new MiddlewarePipeline();
 
-  constructor(
-    private routeRegistry: RouteRegistry,
-    private pluginLoader: any,
-) {}
+    constructor(
+        private routeRegistry: RouteRegistry,
+        private pluginLoader: any,
+    ) { }
 
-  init() {
-    this.app.use(express.json());
+    init() {
+        this.app.use(express.json());
 
-    // attach routes dynamically
-    this.bindRoutes();
+        // attach routes dynamically
+        this.bindRoutes();
 
-    return this.app;
-  }
+        // Register middleware
+        this.pipeline.use(async (req, res, next) => {
+            console.log(`Incoming: ${req.method} ${req.path}`);
+            req.user = { id: 1, role: 'admin' }; // mock auth
+            next();
+        });
+
+        return this.app;
+    }
 
     private bindRoutes() {
         const routes = this.routeRegistry.getAll();
@@ -25,6 +35,9 @@ export class HttpServer {
             this.app[route.method.toLowerCase() as any](
                 route.path,
                 async (req, res) => {
+
+                    await this.pipeline.run(req, res);
+
                     const plugin = this.findPluginForRoute(route.path);
 
                     if (!plugin) {
@@ -38,16 +51,18 @@ export class HttpServer {
                         return res.status(500).json({ error: 'Handler missing' });
                     }
 
-                    return handler(req, res);
+                    const ctx = new RequestContext(req, res, plugin);
+
+                    return handler(ctx);
                 }
             );
         }
     }
-  listen(port: number) {
-    this.app.listen(port, () => {
-      console.log(`🚀 CMS running on http://localhost:${port}`);
-    });
-  }
+    listen(port: number) {
+        this.app.listen(port, () => {
+            console.log(`🚀 CMS running on http://localhost:${port}`);
+        });
+    }
 
     private findPluginForRoute(path: string) {
         return this.pluginLoader.getPlugins?.().find((p: any) =>
