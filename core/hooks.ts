@@ -1,9 +1,10 @@
-type EventCallback<T = any> = (payload: T) => void | Promise<void>;
+type EventCallback = (payload: any) => void | Promise<void>;
 
 export class HookSystem {
   private listeners: Record<string, EventCallback[]> = {};
 
-  on<T = any>(event: string, callback: EventCallback<T>) {
+  // register listener
+  on(event: string, callback: EventCallback) {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
@@ -11,7 +12,8 @@ export class HookSystem {
     this.listeners[event].push(callback);
   }
 
-  async emit<T = any>(event: string, payload?: T) {
+  // emit event
+  async emit(event: string, payload?: any) {
     const handlers = this.listeners[event] || [];
 
     for (const handler of handlers) {
@@ -26,15 +28,15 @@ export class HookSystem {
     this.listeners[event] = handlers.filter(h => h !== callback);
   }
 
-  clear(event?: string) {
-    if (event) {
-      delete this.listeners[event];
-    } else {
-      this.listeners = {};
-    }
-  }
+    namespace(plugin: string) {
+        return {
+            on: (event: string, cb: EventCallback) => {
+                return this.on(`${plugin}:${event}`, cb);
+            },
 
-  list() {
-    return Object.keys(this.listeners);
-  }
+            emit: async (event: string, payload?: any) => {
+                return this.emit(`${plugin}:${event}`, payload);
+            },
+        };
+    }
 }
