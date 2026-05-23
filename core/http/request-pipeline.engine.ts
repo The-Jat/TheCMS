@@ -8,6 +8,8 @@ import { HookSystem } from '../hooks';
 import { RouteResolver } from '../router/route-resolver';
 import { PluginResolver } from '../plugin-resolver';
 import { AuthorizationGate } from '../auth/authorization-gate';
+import { NotFoundException } from '../exception/not-found.exception';
+import { ForbiddenException } from '../exception/forbidden.exception';
 
 export class RequestPipelineEngine {
     constructor(
@@ -29,17 +31,14 @@ export class RequestPipelineEngine {
             this.routeResolver.resolve(req);
 
         if (!resolved) {
-            return res.status(404).json({
-                error: 'Route not found',
-            });
+            throw new NotFoundException('Route not found');
         }
 
         req.params = resolved.params;
 
         const route = resolved.route;
         if (!route) {
-            res.status(404).json({ error: 'Route not found' });
-            return;
+            throw new NotFoundException('Route not found');
         }
 
         // permission check
@@ -49,9 +48,7 @@ export class RequestPipelineEngine {
                 route
             );
         if (!authorized) {
-            return res.status(403).json({
-                error: 'Forbidden'
-            });
+            throw new ForbiddenException();
         }
 
         const plugin =
