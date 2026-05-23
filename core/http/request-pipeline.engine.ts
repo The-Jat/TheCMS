@@ -20,10 +20,27 @@ export class RequestPipelineEngine {
         // execute global middleware
         await this.middleware.execute(req, res);
 
-        const routeDef = this.routeRegistry
-            .getAll()
-            .find(r => r.method === req.method && r.path === req.path);
+        let routeDef: any = null;
 
+        for (const route of this.routeRegistry.getAll()) {
+
+            if (
+                route.method.toUpperCase() !==
+                req.method.toUpperCase()
+            ) {
+                continue;
+            }
+
+            const matched = route.matcher(req.path);
+
+            if (matched) {
+                routeDef = route;
+
+                req.params = matched.params;
+
+                break;
+            }
+        }
         if (!routeDef) {
             res.status(404).json({ error: 'Route not found' });
             return;
@@ -51,15 +68,6 @@ export class RequestPipelineEngine {
         if (!plugin) {
             res.status(500).json({ error: 'Plugin not found' });
             return;
-        }
-
-        if (routeDef.permission) {
-            const allowed = this.auth.hasPermission(req.user, routeDef.permission);
-
-            if (!allowed) {
-                res.status(403).json({ error: 'Forbidden' });
-                return;
-            }
         }
 
         await this.hooks.emit('handler.before', {

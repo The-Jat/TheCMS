@@ -1,47 +1,60 @@
 import { RouteDefinition } from '@thejatcms/sdk';
+import { compileRoute } from '../router/route-matcher';
 
 export class RouteRegistry {
-  private routes: (RouteDefinition & { pluginName: string })[] = [];
 
-  private pluginRoutes = new Map<string, RouteDefinition[]>();
+    private routes: any[] = [];
 
-  register(routes: RouteDefinition[], pluginName: string) {
-    const enriched = routes.map(r => ({
-      ...r,
-      pluginName,
-    }));
+    private pluginRoutes = new Map<string, RouteDefinition[]>();
 
-    this.routes.push(...enriched);
+    register(routes: RouteDefinition[], pluginName: string) {
 
-    const existing = this.pluginRoutes.get(pluginName) || [];
-    this.pluginRoutes.set(pluginName, [...existing, ...routes]);
-  }
+        const enriched = routes.map(r => ({
+            ...r,
 
-  unregister(pluginName: string) {
-    const pluginRoutes = this.pluginRoutes.get(pluginName);
-    if (!pluginRoutes) return;
+            pluginName,
 
-    this.routes = this.routes.filter(
-      r =>
-        !(
-          r.pluginName === pluginName &&
-          pluginRoutes.some(
-            pr =>
-              pr.method === r.method &&
-              pr.path === r.path
-          )
-        )
-    );
+            matcher: compileRoute(r.path),
+        }));
 
-    this.pluginRoutes.delete(pluginName);
-  }
+        this.routes.push(...enriched);
 
-  replace(routes: RouteDefinition[], pluginName: string) {
-    this.unregister(pluginName);
-    this.register(routes, pluginName);
-  }
+        const existing = this.pluginRoutes.get(pluginName) || [];
 
-  getAll() {
-    return this.routes;
-  }
+        this.pluginRoutes.set(pluginName, [
+            ...existing,
+            ...routes,
+        ]);
+    }
+
+    unregister(pluginName: string) {
+
+        const pluginRoutes = this.pluginRoutes.get(pluginName);
+
+        if (!pluginRoutes) return;
+
+        this.routes = this.routes.filter(
+            r =>
+                !(
+                    r.pluginName === pluginName &&
+                    pluginRoutes.some(
+                        pr =>
+                            pr.method === r.method &&
+                            pr.path === r.path
+                    )
+                )
+        );
+
+        this.pluginRoutes.delete(pluginName);
+    }
+
+    replace(routes: RouteDefinition[], pluginName: string) {
+        this.unregister(pluginName);
+
+        this.register(routes, pluginName);
+    }
+
+    getAll() {
+        return this.routes;
+    }
 }
