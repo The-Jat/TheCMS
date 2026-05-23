@@ -10,6 +10,8 @@ import { Container } from './container';
 import { PluginContext } from './plugin-context';
 
 export class PluginLoader {
+    private loadedPlugins = new Map<string, any>();
+
   constructor(
     private readonly routeRegistry: RouteRegistry,
     private readonly permissionRegistry: PermissionRegistry,
@@ -76,7 +78,6 @@ export class PluginLoader {
       );
 
       const plugin = pluginModule.default;
-      console.log("HAS onEnable:", plugin.onEnable);
 
       const ctx = new PluginContext(
         { name: plugin.name, version: plugin.version },
@@ -88,6 +89,13 @@ export class PluginLoader {
           admin: this.adminRegistry,
         }
       );
+
+      this.loadedPlugins.set(plugin.name, {
+        plugin,
+        ctx,
+      });
+
+      console.log("HAS onEnable:", plugin.onEnable);
 
       // lifecycle 1
       await plugin.onLoad?.(ctx);
@@ -153,5 +161,101 @@ export class PluginLoader {
     }
 
     return sorted;
+  }
+
+  async unloadPlugin(name: string) {
+    const entry = this.loadedPlugins.get(name);
+
+    if (!entry) return;
+
+    const { plugin, ctx } = entry;
+
+    // lifecycle hook (optional)
+    await plugin.onDisable?.(ctx);
+
+    // remove from memory
+    this.loadedPlugins.delete(name);
+
+    console.log(`🔴 Plugin unloaded: ${name}`);
+  }
+
+  async reloadPlugin(name: string) {
+    console.log(`♻️ Reloading plugin: ${name}`);
+
+    const pluginsDir = path.join(process.cwd(), 'plugins');
+
+    const manifestPath = path.join(
+      pluginsDir,
+      name,
+      'plugin.json'
+    );
+
+    if (!fs.existsSync(manifestPath)) {
+      console.log(`Plugin ${name} not found`);
+      return;
+    }
+
+    // 1. LOAD MANIFEST
+    const manifest = JSON.parse(
+      fs.readFileSync(manifestPath, 'utf-8')
+    );
+
+    const entryPath = path.join(
+      pluginsDir,
+      name,
+      manifest.entry
+    );
+
+    // 2. UNLOAD OLD PLUGIN FIRST
+    await this.unloadPlugin(name);
+
+    // 3. EMIT BEFORE LOAD HOOK
+    await this.hooks.emit('plugin.beforeLoad', manifest);
+
+    // 4. FRESH IMPORT (ESM-safe cache busting)
+    const pluginModule = await import(
+      pathToFileURL(entryPath).href + `?t=${Date.now()}`
+    );
+
+    const plugin = pluginModule.default;
+
+    // 5. CREATE CONTEXT (FIXED ORDER)
+    const ctx = new PluginContext(
+      { name: plugin.name, version: plugin.version },
+      this.hooks,
+      this.container,
+      {
+        route: this.routeRegistry,
+        permission: this.permissionRegistry,
+        admin: this.adminRegistry,
+      }
+    );
+
+    // 6. STORE FIRST (FIXED BUG YOU HAD)
+    this.loadedPlugins.set(plugin.name, {
+      plugin,
+      ctx,
+    });
+
+    console.log(`🧩 Reloading plugin: ${plugin.name}`);
+
+    // 7. LIFECYCLE: LOAD
+    await plugin.onLoad?.(ctx);
+
+    // 8. EMIT LOADED EVENT
+    await this.hooks.emit('plugin.loaded', plugin);
+
+    // 9. REGISTER SYSTEMS AGAIN (IMPORTANT)
+    this.routeRegistry.register(plugin.routes ?? []);
+    this.permissionRegistry.register(plugin.permissions ?? []);
+    this.adminRegistry.register(plugin.adminNavigation ?? []);
+
+    // 10. LIFECYCLE: ENABLE
+    await plugin.onEnable?.(ctx);
+
+    // 11. EMIT AFTER LOAD
+    await this.hooks.emit('plugin.afterLoad', plugin);
+
+    console.log(`🟢 Plugin reloaded successfully: ${name}`);
   }
 }

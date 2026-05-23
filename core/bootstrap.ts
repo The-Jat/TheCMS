@@ -66,6 +66,11 @@ async function bootstrap() {
     id: 1,
     name: 'TheJat',
   });
+
+  // test hot reload
+  setTimeout(async () => {
+    await loader.reloadPlugin('blog');
+  }, 3000);
 }
 
 bootstrap();
