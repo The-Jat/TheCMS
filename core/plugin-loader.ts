@@ -87,6 +87,7 @@ export class PluginLoader {
   private sortPlugins(manifests: Record<string, any>) {
     const sorted: string[] = [];
     const visited = new Set<string>();
+    const allPlugins = new Set(Object.keys(manifests));
 
     const visit = (name: string) => {
       if (visited.has(name)) return;
@@ -99,6 +100,11 @@ export class PluginLoader {
       const deps = plugin.dependencies || [];
 
       for (const dep of deps) {
+        if (!allPlugins.has(dep)) {
+          throw new Error(
+            `Missing dependency: ${name} depends on ${dep}`
+          );
+        }
         visit(dep);
       }
 
