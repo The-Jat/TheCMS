@@ -1,5 +1,3 @@
-import { Request, Response } from 'express';
-
 export class RequestContext {
   constructor(
     public req: Request,
@@ -9,10 +7,16 @@ export class RequestContext {
   ) {}
 
   json(data: any) {
-    return this.res.json(data);
+    return {
+      type: 'json',
+      data,
+    };
   }
 
   status(code: number) {
-    return this.res.status(code);
+    return {
+      type: 'status',
+      code,
+    };
   }
 }

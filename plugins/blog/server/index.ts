@@ -16,10 +16,11 @@ const plugin: PluginDefinition = {
   ],
   handlers: {
     getPosts: (ctx) => {
-      return ctx.json([
+      // ctx.res.status(403).json({ error: "Blocked by plugin test" });
+      return [
         { id: 1, title: 'Secure Blog Post' },
         { id: 2, title: 'Permission Protected Data' },
-      ]);
+      ];
     },
   },
 

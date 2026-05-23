@@ -99,7 +99,8 @@ export class HttpServer {
 
                     const ctx = new RequestContext(req, res);
 
-                    const result = handler(ctx);
+                    const result = await handler(ctx);
+                    if (res.headersSent) return;
 
                     await this.pluginLoader.hooks.emit('handler.after', {
                         req,
@@ -110,7 +111,7 @@ export class HttpServer {
 
                     await this.pluginLoader.hooks.emit('request.after', { req, res });
 
-                    return result;
+                    return res.json(result);
                 }
             );
         }
