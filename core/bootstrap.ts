@@ -17,6 +17,9 @@ import { PluginResolver } from './plugin-resolver';
 import { AuthorizationGate } from './auth/authorization-gate';
 import { ModuleLoader } from './module-loader';
 import { CoreModule } from './modules/core.module';
+import { AdminRoutes } from './http/routes/admin.routes';
+import { AuthRoutes } from './http/routes/auth.routes';
+import { AdminAuthMiddleware } from './http/admin-auth.middleware';
 
 async function bootstrap() {
   const container = new Container();
@@ -80,7 +83,6 @@ async function bootstrap() {
     container,
   );
 
-  container.register('auth', new PermissionService());
   container.register('middleware', new MiddlewarePipeline());
 
   // register middleware 
@@ -121,6 +123,14 @@ async function bootstrap() {
   const moduleLoader = new ModuleLoader(container);
   await moduleLoader.load();
 
+  const admin = new PluginAdminService(loader);
+  const oauth = container.get('oauth');
+  const adminAuth = new AdminAuthMiddleware(oauth);
+
+  container.register('auth', new PermissionService());
+  container.register('adminRoutes', new AdminRoutes(admin, adminAuth),);
+  container.register('authRoutes', new AuthRoutes(container),);
+
   console.log(
     container.get('oauth')
   );
@@ -141,9 +151,6 @@ async function bootstrap() {
     id: 1,
     name: 'TheJat',
   });
-
-  // HTTP server
-  const admin = new PluginAdminService(loader);
 
   container.register(
     'routeResolver',
@@ -173,7 +180,7 @@ async function bootstrap() {
       container.get('authGate')
     );
 
-  const server = new HttpServer(routeRegistry, loader, admin, reqPipeline, container);
+  const server = new HttpServer(container, reqPipeline);
 
   const app = server.init();
   server.listen(4000);
