@@ -1,22 +1,28 @@
 import { ModuleDefinition } from '@thejatcms/sdk';
+import { OAuthService } from './oauth.service';
 
 const module: ModuleDefinition = {
 
-  name: 'auth',
+    name: 'auth',
 
-  version: '1.0.0',
+    version: '1.0.0',
 
-  register(ctx) {
-    ctx.services.logger.log(
-      'Auth module registered'
-    );
-  },
+    register(ctx) {
+        ctx.container.register(
+            'oauth',
+            new OAuthService()
+        );
 
-  boot(ctx) {
-    ctx.services.logger.log(
-      'Auth module booted'
-    );
-  },
+        ctx.services.logger.log(
+            'Auth module registered'
+        );
+    },
+
+    boot(ctx) {
+        ctx.services.logger.log(
+            'Auth module booted'
+        );
+    },
 };
 
 export default module;

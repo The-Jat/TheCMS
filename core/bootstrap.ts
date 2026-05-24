@@ -83,10 +83,12 @@ async function bootstrap() {
   });
 
   // load modules
-  const moduleLoader =
-    new ModuleLoader(container);
-
+  const moduleLoader = new ModuleLoader(container);
   await moduleLoader.load();
+
+  console.log(
+    container.get('oauth')
+  );
 
   await loader.discover();
 
