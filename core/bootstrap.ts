@@ -14,6 +14,7 @@ import { RouteResolver } from './router/route-resolver';
 import { PluginResolver } from './plugin-resolver';
 import { AuthorizationGate } from './auth/authorization-gate';
 import { ModuleLoader } from './module-loader';
+import { CoreModule } from './modules/core.module';
 
 async function bootstrap() {
   const container = new Container();
@@ -23,30 +24,27 @@ async function bootstrap() {
     appName: 'TheCMS',
   });
 
-  const hooks = new HookSystem();
+  await new CoreModule()
+    .register(container);
 
-  // Registeries
-  const routeRegistry = new RouteRegistry();
-  const permissionRegistry = new PermissionRegistry();
-  const adminRegistry = new AdminRegistry();
+  const hooks =
+    container.get<HookSystem>('hooks');
 
-  // Register them in container
-  container.register('hooks', hooks);
+  const routeRegistry =
+    container.get<RouteRegistry>(
+      'routeRegistry'
+    );
 
-  container.register(
-    'routeRegistry',
-    routeRegistry
-  );
+  const permissionRegistry =
+    container.get<PermissionRegistry>(
+      'permissionRegistry'
+    );
 
-  container.register(
-    'permissionRegistry',
-    permissionRegistry
-  );
+  const adminRegistry =
+    container.get<AdminRegistry>(
+      'adminRegistry'
+    );
 
-  container.register(
-    'adminRegistry',
-    adminRegistry
-  );
 
   hooks.on('plugin.beforeLoad', (manifest) => {
     console.log('🟡 BEFORE LOAD:', manifest.name);
