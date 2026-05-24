@@ -13,6 +13,7 @@ import { MiddlewarePipeline } from './http/middleware';
 import { RouteResolver } from './router/route-resolver';
 import { PluginResolver } from './plugin-resolver';
 import { AuthorizationGate } from './auth/authorization-gate';
+import { ModuleLoader } from './module-loader';
 
 async function bootstrap() {
   const container = new Container();
@@ -80,6 +81,12 @@ async function bootstrap() {
 
     next();
   });
+
+  // load modules
+  const moduleLoader =
+    new ModuleLoader(container);
+
+  await moduleLoader.load();
 
   await loader.discover();
 
