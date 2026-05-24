@@ -99,18 +99,4 @@ export interface PluginContext {
       data?: any
     ) => Promise<void>;
   }
-
-  register: {
-    routes: (
-      r: RouteDefinition[]
-    ) => void;
-
-    permissions: (
-      p: Permission[]
-    ) => void;
-
-    adminNavigation: (
-      a: AdminNavigationItem[]
-    ) => void;
-  };
 }
