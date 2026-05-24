@@ -1,3 +1,5 @@
+// plugins/blog/server/index.ts
+
 import { PluginDefinition, PluginContext } from '@thejatcms/sdk';
 
 const plugin: PluginDefinition = {

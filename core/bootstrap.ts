@@ -1,3 +1,5 @@
+// core/bootstrap.ts
+
 import { Container } from './container';
 import { HookSystem } from './hooks';
 
@@ -86,11 +88,31 @@ async function bootstrap() {
     .get<MiddlewarePipeline>('middleware').use(async (req: any, res, next) => {
       console.log(`Incoming: ${req.method} ${req.path}`);
 
-      req.user = {
-        id: 1,
-        name: 'TheJat',
-        permissions: ['blog.read'],
-      };
+      // req.user = {
+      //   id: 1,
+      //   name: 'TheJat',
+      //   permissions: ['blog.read'],
+      // };
+      const authHeader = req.headers.authorization;
+      // console.log(authHeader);
+      if (!authHeader?.startsWith('Bearer ')) {
+        req.user = null;
+        return next();
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+
+      const oauth = container.get<any>('oauth');
+
+      try {
+        const user = await oauth.getCurrentUser(token);
+
+        req.user = user;
+        // console.log(req.user);
+
+      } catch (error) {
+        req.user = null;
+      }
 
       next();
     });
@@ -151,10 +173,10 @@ async function bootstrap() {
       container.get('authGate')
     );
 
-  const server = new HttpServer(routeRegistry, loader, admin, reqPipeline);
+  const server = new HttpServer(routeRegistry, loader, admin, reqPipeline, container);
 
   const app = server.init();
-  server.listen(3000);
+  server.listen(4000);
 }
 
 bootstrap();

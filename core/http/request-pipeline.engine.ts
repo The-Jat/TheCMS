@@ -23,6 +23,7 @@ export class RequestPipelineEngine {
     ) { }
 
     async execute(req: any, res: any) {
+        console.log('PIPELINE START', req.method, req.path);
 
         // execute global middleware
         await this.middleware.execute(req, res);
