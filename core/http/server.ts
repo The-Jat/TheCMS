@@ -32,7 +32,7 @@ export class HttpServer {
             res.json(data);
         });
 
-         // single catch all route
+        // single catch all route
         this.app.use(async (req, res, next) => {
             try {
                 await this.pipelineEngine.execute(req, res);

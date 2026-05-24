@@ -1,4 +1,4 @@
-import { PluginDefinition } from '@thejatcms/sdk';
+import { PluginDefinition, PluginContext } from '@thejatcms/sdk';
 
 const plugin: PluginDefinition = {
   name: 'blog',
@@ -9,13 +9,15 @@ const plugin: PluginDefinition = {
   routes: [
     {
       method: 'GET',
-      path: '/blog',
+      path: '/blog/:id',
       handler: 'getPosts',
       permission: 'blog.read',
     },
   ],
   handlers: {
     getPosts: async (ctx) => {
+      const id = ctx.params.id;
+      console.log(id);
       return [
         { id: 1, title: 'Secure Blog Post' },
         { id: 2, title: 'Permission Protected Data' },
@@ -32,15 +34,11 @@ const plugin: PluginDefinition = {
     },
   ],
 
-  // onLoad(ctx) {
-  //   ctx.services.logger.log('Blog loaded');
+  onLoad(ctx: PluginContext) {
+    ctx.services.logger.log('Blog loaded');
+  },
 
-  //   ctx.register.routes(this.routes ?? [], plugin.name);
-  //   ctx.register.permissions(this.permissions);
-  //   ctx.register.adminNavigation(this.adminNavigation);
-  // },
-
-  onEnable(ctx) {
+  onEnable(ctx: PluginContext) {
     ctx.events.on('user.created', (user) => {
       ctx.services.logger.log('BLOG EVENT:', user);
     });

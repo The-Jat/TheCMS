@@ -67,6 +67,7 @@ export class PluginLoader {
         continue;
       }
 
+      // load plugin
       const entryPath = path.join(
         pluginsDir,
         manifest.pluginName,
@@ -79,6 +80,7 @@ export class PluginLoader {
 
       const plugin = pluginModule.default;
 
+      // route registration
       this.routeRegistry.register(
         plugin.routes ?? [],
         plugin.name
@@ -191,6 +193,12 @@ export class PluginLoader {
     // remove from memory
     this.loadedPlugins.delete(name);
 
+    this.routeRegistry.unregister(name);
+
+    this.permissionRegistry.unregister(name);
+
+    this.adminRegistry.unregister(name);
+
     console.log(`🔴 Plugin unloaded: ${name}`);
   }
 
@@ -210,7 +218,7 @@ export class PluginLoader {
       return;
     }
 
-    // 1. LOAD MANIFEST
+    // LOAD MANIFEST
     const manifest = JSON.parse(
       fs.readFileSync(manifestPath, 'utf-8')
     );
@@ -221,20 +229,20 @@ export class PluginLoader {
       manifest.entry
     );
 
-    // 2. UNLOAD OLD PLUGIN FIRST
+    // UNLOAD OLD PLUGIN FIRST
     await this.unloadPlugin(name);
 
-    // 3. EMIT BEFORE LOAD HOOK
+    // EMIT BEFORE LOAD HOOK
     await this.hooks.emit('plugin.beforeLoad', manifest);
 
-    // 4. FRESH IMPORT (ESM-safe cache busting)
+    // FRESH IMPORT (ESM-safe cache busting)
     const pluginModule = await import(
       pathToFileURL(entryPath).href + `?t=${Date.now()}`
     );
 
     const plugin = pluginModule.default;
 
-    // 5. CREATE CONTEXT (FIXED ORDER)
+    // CREATE CONTEXT
     const ctx = new PluginContext(
       { name: plugin.name, version: plugin.version },
       this.hooks,
@@ -246,7 +254,7 @@ export class PluginLoader {
       }
     );
 
-    // 6. STORE FIRST (FIXED BUG YOU HAD)
+    // STORE FIRST
     this.loadedPlugins.set(plugin.name, {
       plugin,
       ctx,
@@ -254,21 +262,19 @@ export class PluginLoader {
 
     console.log(`🧩 Reloading plugin: ${plugin.name}`);
 
-    // 7. LIFECYCLE: LOAD
-    await plugin.onLoad?.(ctx);
-
-    // 8. EMIT LOADED EVENT
-    await this.hooks.emit('plugin.loaded', plugin);
-
-    // 9. REGISTER SYSTEMS AGAIN (IMPORTANT)
+    // REGISTER SYSTEMS AGAIN
     this.routeRegistry.replace(plugin.routes ?? [], plugin.name);
     this.permissionRegistry.replace(plugin.permissions ?? [], plugin.name);
     this.adminRegistry.replace(plugin.adminNavigation ?? [], plugin.name);
 
-    // 10. LIFECYCLE: ENABLE
+    // Load
+    await plugin.onLoad?.(ctx);
+    await this.hooks.emit('plugin.loaded', plugin);
+
+    // LIFECYCLE: ENABLE
     await plugin.onEnable?.(ctx);
 
-    // 11. EMIT AFTER LOAD
+    // EMIT AFTER LOAD
     await this.hooks.emit('plugin.afterLoad', plugin);
 
     console.log(`🟢 Plugin reloaded successfully: ${name}`);
