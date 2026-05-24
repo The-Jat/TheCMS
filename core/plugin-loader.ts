@@ -13,12 +13,33 @@ export class PluginLoader {
   private loadedPlugins = new Map<string, any>();
 
   constructor(
-    private readonly routeRegistry: RouteRegistry,
-    private readonly permissionRegistry: PermissionRegistry,
-    private readonly adminRegistry: AdminRegistry,
-    private readonly hooks: HookSystem,
-    private readonly container: Container,
+    private container: Container,
   ) { }
+
+  private get routeRegistry() {
+    return this.container.get<RouteRegistry>(
+      'routeRegistry'
+    );
+  }
+
+  private get permissionRegistry() {
+    return this.container.get<PermissionRegistry>(
+      'permissionRegistry'
+    );
+  }
+
+  private get adminRegistry() {
+    return this.container.get<AdminRegistry>(
+      'adminRegistry'
+    );
+  }
+
+  private get hooks() {
+    return this.container.get<HookSystem>(
+      'hooks'
+    );
+  }
+
   async discover() {
     const pluginsDir = path.join(process.cwd(), 'plugins');
 

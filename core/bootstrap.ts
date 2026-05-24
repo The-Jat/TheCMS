@@ -30,6 +30,24 @@ async function bootstrap() {
   const permissionRegistry = new PermissionRegistry();
   const adminRegistry = new AdminRegistry();
 
+  // Register them in container
+  container.register('hooks', hooks);
+
+  container.register(
+    'routeRegistry',
+    routeRegistry
+  );
+
+  container.register(
+    'permissionRegistry',
+    permissionRegistry
+  );
+
+  container.register(
+    'adminRegistry',
+    adminRegistry
+  );
+
   hooks.on('plugin.beforeLoad', (manifest) => {
     console.log('🟡 BEFORE LOAD:', manifest.name);
   });
@@ -59,28 +77,25 @@ async function bootstrap() {
   });
 
   const loader = new PluginLoader(
-    routeRegistry,
-    permissionRegistry,
-    adminRegistry,
-    hooks,
     container,
   );
 
-  const auth = new PermissionService();
-  const pipeline = new MiddlewarePipeline();
+  container.register('auth', new PermissionService());
+  container.register('middleware', new MiddlewarePipeline());
 
   // register middleware 
-  pipeline.use(async (req: any, res, next) => {
-    console.log(`Incoming: ${req.method} ${req.path}`);
+  container
+    .get<MiddlewarePipeline>('middleware').use(async (req: any, res, next) => {
+      console.log(`Incoming: ${req.method} ${req.path}`);
 
-    req.user = {
-      id: 1,
-      name: 'TheJat',
-      permissions: ['blog.read'],
-    };
+      req.user = {
+        id: 1,
+        name: 'TheJat',
+        permissions: ['blog.read'],
+      };
 
-    next();
-  });
+      next();
+    });
 
   // load modules
   const moduleLoader = new ModuleLoader(container);
@@ -101,12 +116,6 @@ async function bootstrap() {
   console.log('ADMIN NAVIGATION');
   console.log(adminRegistry.getAll());
 
-  // Emitting scoped event 1:
-  // await hooks.forPlugin('blog').emit('user.created', {
-  //   id: 1,
-  //   name: 'TheJat',
-  // });
-
   // Emitting scoped event 2:
   await hooks.emit('blog:user.created', {
     id: 1,
@@ -116,19 +125,34 @@ async function bootstrap() {
   // HTTP server
   const admin = new PluginAdminService(loader);
 
-  const routeResolver = new RouteResolver(routeRegistry);
-  const pluginResolver = new PluginResolver(loader);
-  const authGate = new AuthorizationGate(auth);
-
-  const reqPipeline = new RequestPipelineEngine(
-    loader,
-    auth,
-    hooks,
-    pipeline,
-    routeResolver,
-    pluginResolver,
-    authGate
+  container.register(
+    'routeResolver',
+    new RouteResolver(routeRegistry)
   );
+
+  container.register(
+    'pluginResolver',
+    new PluginResolver(loader)
+  );
+
+  container.register(
+    'authGate',
+    new AuthorizationGate(
+      container.get('auth')
+    )
+  );
+
+  const reqPipeline =
+    new RequestPipelineEngine(
+      loader,
+      container.get('auth'),
+      hooks,
+      container.get('middleware'),
+      container.get('routeResolver'),
+      container.get('pluginResolver'),
+      container.get('authGate')
+    );
+
   const server = new HttpServer(routeRegistry, loader, admin, reqPipeline);
 
   const app = server.init();
