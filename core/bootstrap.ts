@@ -20,6 +20,8 @@ import { CoreModule } from './modules/core.module';
 import { AdminRoutes } from './http/routes/admin.routes';
 import { AuthRoutes } from './http/routes/auth.routes';
 import { AdminAuthMiddleware } from './http/admin-auth.middleware';
+import { AuthController } from './http/controllers/auth.controller';
+import { AdminController } from './http/controllers/admin.controller';
 
 async function bootstrap() {
   const container = new Container();
@@ -124,12 +126,15 @@ async function bootstrap() {
   await moduleLoader.load();
 
   const admin = new PluginAdminService(loader);
+  const adminController = new AdminController(admin);
   const oauth = container.get('oauth');
   const adminAuth = new AdminAuthMiddleware(oauth);
 
   container.register('auth', new PermissionService());
-  container.register('adminRoutes', new AdminRoutes(admin, adminAuth),);
-  container.register('authRoutes', new AuthRoutes(container),);
+  container.register('adminRoutes', new AdminRoutes(adminController, adminAuth));
+  const authController = new AuthController(oauth);
+  const authRoutes = new AuthRoutes(authController);
+  container.register('authRoutes', authRoutes,);
 
   console.log(
     container.get('oauth')

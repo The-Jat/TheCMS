@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { PluginAdminService } from '../../admin/plugin-admin.service';
+import { AdminController } from '../controllers/admin.controller';
 
 export class AdminRoutes {
+
     public router = Router();
 
     constructor(
-        private admin: PluginAdminService,
+        private controller: AdminController,
         private authMiddleware: any,
     ) {
         this.register();
@@ -14,22 +15,32 @@ export class AdminRoutes {
     private register() {
 
         const auth =
-            this.authMiddleware.handle.bind(this.authMiddleware);
+            this.authMiddleware.handle.bind(
+                this.authMiddleware,
+            );
 
         this.router.get(
             '/',
             auth,
-            (req: any, res) => {
-                res.send(`Welcome ${req.user.name}`);
-            },
+            this.controller.dashboard.bind(
+                this.controller,
+            ),
         );
 
         this.router.get(
             '/plugins',
             auth,
-            (req, res) => {
-                res.json(this.admin.getPlugins());
-            },
+            this.controller.plugins.bind(
+                this.controller,
+            ),
+        );
+
+        this.router.get(
+            '/plugins/:name',
+            auth,
+            this.controller.pluginDetails.bind(
+                this.controller,
+            ),
         );
     }
 }
