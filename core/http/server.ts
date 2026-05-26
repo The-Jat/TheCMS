@@ -14,6 +14,8 @@ import { AdminAuthMiddleware } from './admin-auth.middleware';
 import session from 'express-session';
 import { AdminRoutes } from './routes/admin.routes';
 import { AuthRoutes } from './routes/auth.routes';
+import path from 'path';
+import fs from 'fs';
 
 export class HttpServer {
     private app = express();
@@ -45,12 +47,41 @@ export class HttpServer {
         );
 
         this.app.get(
+            '/plugins/:plugin/admin.js',
+            (req, res) => {
+
+                const plugin =
+                    req.params.plugin;
+
+                const file =
+                    path.join(
+                        process.cwd(),
+                        'plugins',
+                        plugin,
+                        'admin.js'
+                    );
+
+                if (!fs.existsSync(file)) {
+                    return res 
+                        .status(404)
+                        .json({
+                            error:
+                            'Plugin asset not found'
+                        });
+                }
+                res.sendFile(file);
+            }
+        );
+
+        this.app.get(
             '/api/admin/manifest',
             (req, res) => {
 
                 const manifest =
                     this.container
                         .get<any>('adminManifest');
+
+                console.log(manifest.getManifest());
 
                 res.json(
                     manifest.getManifest()
