@@ -22,6 +22,7 @@ import { AuthRoutes } from './http/routes/auth.routes';
 import { AdminAuthMiddleware } from './http/admin-auth.middleware';
 import { AuthController } from './http/controllers/auth.controller';
 import { AdminController } from './http/controllers/admin.controller';
+import { AdminManifestService } from './admin/admin-manifest.service';
 
 async function bootstrap() {
   const container = new Container();
@@ -84,6 +85,8 @@ async function bootstrap() {
   const loader = new PluginLoader(
     container,
   );
+
+  container.register('adminManifest', new AdminManifestService(loader));
 
   container.register('middleware', new MiddlewarePipeline());
 

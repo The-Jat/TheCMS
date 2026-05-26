@@ -40,6 +40,12 @@ export class PluginLoader {
     );
   }
 
+  private get adminPageRegistry() {
+    return this.container.get(
+      'adminPageRegistry'
+    );
+  }
+
   async discover() {
     const pluginsDir = path.join(process.cwd(), 'plugins');
 
@@ -114,6 +120,11 @@ export class PluginLoader {
 
       this.adminRegistry.register(
         plugin.adminNavigation ?? [],
+        plugin.name
+      );
+
+      this.adminPageRegistry.register(
+        plugin.adminPages ?? [],
         plugin.name
       );
 
@@ -219,6 +230,8 @@ export class PluginLoader {
     this.permissionRegistry.unregister(name);
 
     this.adminRegistry.unregister(name);
+
+    this.adminPageRegistry.unregister(name);
 
     console.log(`🔴 Plugin unloaded: ${name}`);
   }

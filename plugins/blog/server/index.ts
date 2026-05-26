@@ -8,6 +8,29 @@ const plugin: PluginDefinition = {
   enabled: true,
   entry: './server/index.ts',
 
+  admin: {
+    bundle: "/plugins/blog/admin.js",
+
+    navigation: [
+      {
+        label: "Blog",
+        icon: "FileText",
+        path: "/blog"
+      }
+    ],
+
+    routes: [
+      {
+        path: "/blog",
+        component: "BlogList"
+      },
+      {
+        path: "/blog/create",
+        component: "BlogCreate"
+      }
+    ]
+  },
+
   routes: [
     {
       method: 'GET',

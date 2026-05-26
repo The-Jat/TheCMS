@@ -1,6 +1,7 @@
 // core/http/server.ts
 
 import express from 'express';
+import cors from 'cors';
 import { RouteRegistry } from '../registry/route.registry';
 import { MiddlewarePipeline } from './middleware';
 import { RequestContext } from './request-context';
@@ -23,6 +24,12 @@ export class HttpServer {
     ) { }
 
     init() {
+        this.app.use(
+            cors({
+                origin: 'http://localhost:5173',
+                credentials: true,
+            }),
+        );
         this.app.use(express.json());
         this.app.use(cookieParser());
 
@@ -35,6 +42,20 @@ export class HttpServer {
                     httpOnly: true,
                 },
             }),
+        );
+
+        this.app.get(
+            '/api/admin/manifest',
+            (req, res) => {
+
+                const manifest =
+                    this.container
+                        .get<any>('adminManifest');
+
+                res.json(
+                    manifest.getManifest()
+                );
+            }
         );
 
         // admin routes module

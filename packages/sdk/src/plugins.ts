@@ -54,20 +54,47 @@ export interface PluginHookDefinition {
   handler: EventHandler;
 }
 
+export interface AdminRoute {
+  path: string;
+  component: string;
+  exact?: boolean;
+}
+
+export interface PublicRoute {
+  path: string;
+  component: string;
+}
+
 export interface PluginDefinition {
   name: string;
   version: string;
+
   enabled: boolean;
   entry: string;
 
-  routes?: RouteDefinition[];
-  permissions?: Permission[];
-  adminNavigation?: AdminNavigationItem[];
+  server?: {
+    routes?: RouteDefinition[];
+    permissions?: Permission[];
+    handlers?: Record<string, PluginHandler>;
+  };
+
+  admin?: {
+    entry: string;
+
+    routes: AdminRoute[];
+
+    navigation: AdminNavigationItem[];
+  };
+
+  public?: {
+    entry: string;
+
+    routes: PublicRoute[];
+  };
 
   dependencies?: string[];
 
   hooks?: PluginHookDefinition[];
-  handlers?: Record<string, PluginHandler>;
 
   onLoad?: (
     ctx: PluginContext

@@ -1,6 +1,7 @@
 // core/modules/core.module.ts
 
 import { OAuthService } from "../../modules/auth/oauth.service";
+import { AdminPageRegistry } from "../admin/admin-page.registry";
 import { Container } from "../container";
 import { HookSystem } from "../hooks";
 import { AdminRegistry } from "../registry/admin.registry";
@@ -28,6 +29,11 @@ export class CoreModule {
         container.register(
             'adminRegistry',
             new AdminRegistry()
+        );
+
+        container.register(
+            'adminPageRegistry',
+            new AdminPageRegistry(),
         );
     }
 }
