@@ -9,7 +9,8 @@ const plugin: PluginDefinition = {
   entry: './server/index.ts',
 
   admin: {
-    entry: "/plugins/blog/admin.js",
+    // entry: "/plugins/blog/admin.js",
+    entry: "/plugins/blog/admin/dist/admin.js",
 
     navigation: [
       {

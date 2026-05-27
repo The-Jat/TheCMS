@@ -46,6 +46,16 @@ export class HttpServer {
             }),
         );
 
+        this.app.use(
+            '/plugins',
+            express.static(
+                path.join(
+                    process.cwd(),
+                    'plugins'
+                )
+            )
+        );
+
         this.app.get(
             '/plugins/:plugin/admin.js',
             (req, res) => {
