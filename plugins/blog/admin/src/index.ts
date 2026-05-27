@@ -1,7 +1,10 @@
-import BlogList from './pages/BlogList';
+import { definePlugin } from '@thejatcms/admin-sdk';
+import BlogList  from './pages/BlogList';
 
-window.TheCMS.PluginAPI
-  .registerComponent(
-    'BlogList',
-    BlogList
-  );
+export default definePlugin({
+
+  components: {
+    BlogList,
+  },
+
+});

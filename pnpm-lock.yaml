@@ -242,10 +242,15 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/admin-sdk: {}
+
   packages/sdk: {}
 
   plugins/blog/admin:
     dependencies:
+      '@thejatcms/admin-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/admin-sdk
       react:
         specifier: ^19.0.0
         version: 19.2.6
